@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <h2>Hi {{ full_name }} Logged in!</h2>
+    <p>Click <a href="/logout/">here</a> to logout.</p>
+
+    <p>Here is your monitor list. You can simply <a href="/create_monitor/">add</a> a new monitor.</p>
+
+    {% if monitors_list %}
+           <ul>
+    {% for monitor in monitors_list %}
+           <li><a href="">{{ monitor.monitor_name }}</a> (<a href="{% url 'delete' monitor.id %}">delete</a>)</li>
+    {% endfor %}
+       </ul>
+{% else %}
+           <p>No monitors are available.</p>
+{% endif %}
+
+{% endblock %}

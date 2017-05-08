@@ -19,11 +19,14 @@ from django.contrib import admin
 from WebClient import views
 
 urlpatterns = [
+    url(r'^$', views.index),
     url(r'^admin/', admin.site.urls),
     url(r'^login/$', views.login),
     url(r'^auth/$', views.auth_view),
     url(r'^logout/$', views.logout),
-    url(r'^loggedin/$', views.loggedin),
+    url(r'^monitors/$', views.monitors),
+    url(r'^create_monitor/$', views.create_monitor),
+    url(r'^delete_monitor/(?P<monitor_id>[0-9]+)/$', views.delete_monitor, name='delete'),
     url(r'^invalid/$', views.invalid_login),
     url(r'^register/$', views.register),
     url(r'^register_success/$', views.register_success)
