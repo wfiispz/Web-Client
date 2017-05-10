@@ -10,7 +10,7 @@
     {% if monitors_list %}
            <ul>
     {% for monitor in monitors_list %}
-           <li><a href="">{{ monitor.monitor_name }}</a> (<a href="{% url 'delete' monitor.id %}">delete</a>)</li>
+           <li><a href="{% url 'host' monitor.id %}">{{ monitor.monitor_name }}</a> (<a href="{% url 'delete' monitor.id %}">delete</a>)</li>
     {% endfor %}
        </ul>
 {% else %}
