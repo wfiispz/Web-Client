@@ -11,15 +11,15 @@ class Monitors(models.Model):
 class Page(models.Model):
     size = models.IntegerField()
     number = models.IntegerField()
-    totalCount = models.IntegerField()
+    total_count = models.IntegerField()
 
 
 class Measurements(models.Model):
     host = models.URLField()
     metric = models.CharField(max_length=10)
     unit = models.CharField(max_length=1)
-    maxValue = models.IntegerField()
-    complex = models.BooleanField()
+    max_value = models.IntegerField()
+    complex_mes = models.BooleanField()
     values = models.URLField()
 
 
