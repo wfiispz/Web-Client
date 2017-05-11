@@ -16,8 +16,8 @@ class Page(models.Model):
 
 class Measurements(models.Model):
     host = models.URLField()
-    metric = models.CharField(max_length=10)
-    unit = models.CharField(max_length=1)
+    metric = models.CharField(max_length=20)
+    unit = models.CharField(max_length=20)
     max_value = models.IntegerField()
     complex_mes = models.BooleanField()
     values = models.URLField()
