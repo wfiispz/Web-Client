@@ -8,7 +8,6 @@ class Monitors(models.Model):
     user_id = models.ForeignKey(User)
 
 class Hosts(models.Model):
-    monitor_id_id = models.IntegerField()
-    host_name = models.CharField(max_length=200)
-    host_description = models.CharField(max_length=200)
-    host_measurements = models.CharField(max_length=200)
+    monitor_id = models.IntegerField()
+    name = models.CharField(max_length=200)
+    description = models.CharField(max_length=200)

@@ -99,5 +99,5 @@ def register(request):
 
 def hosts(request, monitor_id):
     # TODO Take information about hosts from monitor
-    host_list = Hosts.objects.filter(monitor_id_id=monitor_id)
+    host_list = Hosts.objects.filter(monitor_id=monitor_id)
     return render_to_response('hosts.html', {"host_list": host_list})
