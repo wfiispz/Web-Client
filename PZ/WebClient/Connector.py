@@ -69,7 +69,7 @@ class Connector(object):
 
     def get_measurement_values(self, endpoint):
         values = []
-        self.url_adr += (endpoint+'/values')
+        self.url_adr = (endpoint+'/values')
         self.response = requests.get(self.url_adr, params=self.payload)
         self.json_data = json.loads(self.response.text)
 
