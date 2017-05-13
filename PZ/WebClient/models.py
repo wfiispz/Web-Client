@@ -36,3 +36,6 @@ class Values(models.Model):
 
 class Resources(models.Model):
     resource_id = models.CharField(max_length=200)
+    name = models.CharField(max_length=200)
+    description = models.CharField(max_length=300)
+    measurements = models.TextField(null=True)
