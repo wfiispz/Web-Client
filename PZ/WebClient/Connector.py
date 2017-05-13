@@ -32,15 +32,15 @@ class Connector(object):
                     total_count=self.json_data['page']['size'])
         return [resources_list, page]
 
-    def get_resource_by_id(self, rid):
-        self.url_adr += rid
+    def get_resource_id(self, guid):
+        self.url_adr += guid
         self.response = requests.get(self.url_adr)
         self.json_data = json.loads(self.response.text)
-        return Resources(id=self.json_data['id'], name=self.json_data['name'], description=self.json_data['description']
-                         , measurements=self.json_data['measurements'])
+        return Resources(resource_id=self.json_data['id'], name=self.json_data['name'], description=self.json_data['description'],
+                         measurements=self.json_data['measurements'])
 
-    def delete_resource(self, rid):
-        self.url_adr += rid
+    def delete_resource(self, guid):
+        self.url_adr += guid
         self.response = requests.delete(self.url_adr)
         self.json_data = json.loads(self.response.text)
         return self.json_data
@@ -59,17 +59,17 @@ class Connector(object):
                     total_count=self.json_data['page']['size'])
         return [measurements_list, page]
 
-    def get_measurements_guid(self, guid):
-        self.url_adr += guid
+    def get_measurement(self, endpoint):
+        self.url_adr = endpoint
         self.response = requests.get(self.url_adr)
         self.json_data = json.loads(self.response.text)
         return Measurements(host=self.json_data['host'], metric=self.json_data['metric'], unit=self.json_data['unit'],
                             max_value=self.json_data['maxValue'], complex_mes=self.json_data['complex'],
                             values=self.json_data['values'])
 
-    def get_measurements_guid_values(self, guid):
+    def get_measurement_values(self, endpoint):
         values = []
-        self.url_adr += (guid+'/values')
+        self.url_adr += (endpoint+'/values')
         self.response = requests.get(self.url_adr, params=self.payload)
         self.json_data = json.loads(self.response.text)
 
@@ -78,7 +78,7 @@ class Connector(object):
 
         return values
 
-    def delete_measurements_guid_values(self, guid):
+    def delete_measurement_values(self, guid):
         self.url_adr += guid+"/values"
         self.response = requests.delete(self.url_adr)
         self.json_data = json.loads(self.response.text)
