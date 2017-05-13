@@ -1,5 +1,6 @@
 import requests
 import json
+import urllib.parse
 
 from .models import *
 
@@ -40,7 +41,7 @@ class Connector(object):
 
         page = Page(size=self.json_data['page']['number'], number=self.json_data['page']['totalCount'],
                     total_count=self.json_data['page']['size'])
-        return [resources_list, page]
+        return resources_list, page
 
     def get_resource_id(self, guid):
         self.url_adr += guid
@@ -64,7 +65,7 @@ class Connector(object):
 
         page = Page(size=self.json_data['page']['number'], number=self.json_data['page']['totalCount'],
                     total_count=self.json_data['page']['size'])
-        return [measurements_list, page]
+        return measurements_list, page
 
     def get_measurement(self, endpoint):
         self.url_adr = endpoint
@@ -76,7 +77,7 @@ class Connector(object):
 
     def get_measurement_values(self, endpoint):
         values = []
-        self.url_adr = (endpoint+'/values')
+        self.url_adr += urllib.parse.urljoin(endpoint, 'values')
         self.response = requests.get(self.url_adr, params=self.payload)
         self.json_data = json.loads(self.response.text)
 
@@ -86,7 +87,7 @@ class Connector(object):
         return values
 
     def delete_measurement_values(self, guid):
-        self.url_adr += guid+"/values"
+        self.url_adr += urllib.parse.urljoin(guid, 'values')
         self.response = requests.delete(self.url_adr)
         self.json_data = json.loads(self.response.text)
         return self.json_data
@@ -95,7 +96,7 @@ class Connector(object):
         self.response = requests.post(self.url_adr, data=json.dumps(self.payload))
 
     def delete_measurement(self, guid):
-        self.url_adr += guid+"/"
+        self.url_adr += urllib.parse.urljoin(guid, 'values')
         self.response = requests.delete(self.url_adr)
         self.json_data = json.loads(self.response.text)
         return self.json_data
