@@ -10,10 +10,20 @@ class Connector(object):
         self.json_data = None
         self.payload = {}
 
-    def set_url(self, url_adr):
+    @property
+    def url_address(self):
+        return self.url_adr
+
+    @url_address.setter
+    def url_address(self, url_adr):
         self.url_adr = url_adr
 
-    def set_request_args(self, payload):
+    @property
+    def request_args(self):
+        return self.payload
+
+    @request_args.setter
+    def request_args(self, payload):
         self.payload = payload
 
     def to_json(self):
@@ -48,8 +58,8 @@ class Connector(object):
     def get_measurements(self, endpoints):
         measurements_list = []
 
-        for endpoint in endpoints:
-            self.json_data = json.loads(requests.get(endpoint, params=self.payload).text)
+        endpoints_data = json.loads(endpoints)
+        for endpoint in endpoints_data:
             measurements_list.append(get_measurement(endpoint))
 
         page = Page(size=self.json_data['page']['number'], number=self.json_data['page']['totalCount'],
