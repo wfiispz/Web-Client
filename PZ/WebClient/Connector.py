@@ -94,7 +94,7 @@ class Connector(object):
     def post_measurements(self):
         self.response = requests.post(self.url_adr, data=json.dumps(self.payload))
 
-    def delete_measurements_guid(self, guid):
+    def delete_measurement(self, guid):
         self.url_adr += guid+"/"
         self.response = requests.delete(self.url_adr)
         self.json_data = json.loads(self.response.text)
