@@ -45,15 +45,12 @@ class Connector(object):
         self.json_data = json.loads(self.response.text)
         return self.json_data
 
-    def get_measurements(self):
+    def get_measurements(self, endpoints):
         measurements_list = []
-        self.response = requests.get(self.url_adr, params=self.payload)
-        self.json_data = json.loads(self.response.text)
 
-        for item in self.json_data['measurements']:
-            measurements_list.append(Measurements(host=item['host'], metric=item['metric'], unit=item['unit'],
-                                                  max_value=item['maxValue'], complex_mes=item['complex'],
-                                                  values=item['values']))
+        for endpoint in endpoints:
+            self.json_data = json.loads(requests.get(endpoint, params=self.payload).text)
+            measurements_list.append(get_measurement(endpoint))
 
         page = Page(size=self.json_data['page']['number'], number=self.json_data['page']['totalCount'],
                     total_count=self.json_data['page']['size'])
