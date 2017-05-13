@@ -5,6 +5,7 @@ from django.template.context_processors import csrf
 from django.contrib.auth.forms import UserCreationForm
 from django.db.models import Q
 from .models import Monitors
+from .models import Hosts
 
 
 def index(request):
@@ -95,3 +96,8 @@ def register(request):
     args['form'] = UserCreationForm()
 
     return render_to_response('register.html', args)
+
+def hosts(request, monitor_id):
+    # TODO Take information about hosts from monitor
+    host_list = Hosts.objects.filter(monitor_id=monitor_id)
+    return render_to_response('hosts.html', {"host_list": host_list})

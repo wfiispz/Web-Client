@@ -29,5 +29,6 @@ urlpatterns = [
     url(r'^delete_monitor/(?P<monitor_id>[0-9]+)/$', views.delete_monitor, name='delete'),
     url(r'^invalid/$', views.invalid_login),
     url(r'^register/$', views.register),
-    url(r'^register_success/$', views.register_success)
+    url(r'^register_success/$', views.register_success),
+    url(r'^hosts/(?P<monitor_id>[0-9]+)/$', views.hosts, name='host'),
 ]
