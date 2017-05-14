@@ -1,28 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <style>
-table {
-    font-family: arial, sans-serif;
-    border-collapse: collapse;
-    width: 100%;
-}
-
-td, th {
-    border: 1px solid #dddddd;
-    text-align: left;
-    padding: 8px;
-}
-
-tr:nth-child(even) {
-    background-color: #dddddd;
-}
-</style>
-</head>
+{% extends "base.html" %}
+{% block content %}
 <body>
-<table>
+<table class="table table-striped table-bordered">
 <tr>
     <th>Id</th>
     <th>Name</th>
@@ -37,4 +16,4 @@ tr:nth-child(even) {
 {% endfor %}
 </table>
 </body>
-</html>
+{% endblock %}
