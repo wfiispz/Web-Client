@@ -4,8 +4,7 @@ from django.contrib import auth
 from django.template.context_processors import csrf
 from django.contrib.auth.forms import UserCreationForm
 from django.db.models import Q
-from .models import Monitors
-from .models import Hosts
+from .Connector import *
 
 
 def index(request):
@@ -97,7 +96,36 @@ def register(request):
 
     return render_to_response('register.html', args)
 
+
 def hosts(request, monitor_id):
-    # TODO Take information about hosts from monitor
-    host_list = Hosts.objects.filter(monitor_id=monitor_id)
-    return render_to_response('hosts.html', {"host_list": host_list})
+    current_monitor = Monitors.objects.get(id=monitor_id)
+    c = Connector(urljoin(current_monitor.monitor_domain, 'resources'))
+
+    host_list, page = c.get_resources()
+    return render_to_response('hosts.html', {'monitor_domain' : current_monitor.monitor_domain, 'monitor_id' : monitor_id, 'host_list' : host_list})
+
+
+def measurements(request, monitor_id, host_id):
+    c = Connector(Monitors.objects.get(id = monitor_id).monitor_domain)
+
+    measurements_endpoints = c.get_resource_id('resources/' + host_id).measurements
+    measurements_list = c.get_measurements(str(measurements_endpoints).replace("\'", "\""))
+
+    for measurement in measurements_list:
+        value =  str(measurement.values)
+        measurement.values = value.split('/')[len(value.split('/')) - 2]
+
+    return render_to_response('measurements.html', {'resources_list' : measurements_list, 'monitor_id' : monitor_id, 'host_id' : host_id})
+
+def values(request, monitor_id, host_id, measurement_id):
+    c = Connector(Monitors.objects.get(id = monitor_id).monitor_domain)
+
+    measurements_endpoints = c.get_resource_id('resources/' + host_id).measurements
+    for endpoint in measurements_endpoints:
+        if endpoint.__contains__(measurement_id):
+            measurements_endpoint = endpoint
+
+    values_list = c.get_measurement_values(measurements_endpoint)
+    print(values_list)
+
+    return render_to_response('values.html', {'values_list' : values_list})

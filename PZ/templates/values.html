@@ -22,20 +22,15 @@ tr:nth-child(even) {
 </style>
 </head>
 <body>
-<p>{{ monitor_domain }} > hosts</p>
 <table>
 <tr>
-    <th>Id</th>
-    <th>Name</th>
-    <th>Description</th>
-    <th>Action</th>
+    <th>Datetime</th>
+    <th>Value</th>
 </tr>
-{% for host in host_list %}
+{% for value in values_list %}
     <tr>
-        <td>{{  host.resource_id }}</td>
-        <td>{{ host.name }}</td>
-        <td>{{  host.description }}</td>
-        <td><a href="{% url 'measurement' monitor_id host.resource_id %}">show measurements</a></td>
+        <td>{{  value.datetime }}</td>
+        <td>{{  value.value }}</td>
     </tr>
 {% endfor %}
 </table>

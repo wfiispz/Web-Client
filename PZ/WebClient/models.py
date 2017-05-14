@@ -8,12 +8,6 @@ class Monitors(models.Model):
     user_id = models.ForeignKey(User)
 
 
-class Hosts(models.Model):
-    monitor_id = models.IntegerField()
-    name = models.CharField(max_length=200)
-    description = models.CharField(max_length=200)
-
-
 class Page(models.Model):
     size = models.IntegerField()
     number = models.IntegerField()
