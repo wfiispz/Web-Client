@@ -10,7 +10,7 @@
             </tr>
             {% for host in host_list %}
                 <tr>
-                    <td>{{ host.id }}</td>
+                    <td>{{ host.resource_id }}</td>
                     <td>{{ host.name }}</td>
                     <td>{{ host.description }}</td>
                     <td><a href="{% url 'measurement' monitor_id host.resource_id %}">show measurements</a></td>
