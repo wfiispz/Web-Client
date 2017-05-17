@@ -1,12 +1,11 @@
 {% extends "base.html" %}
-
 {% block content %}
+    <div class="card card-container">
+        <h2>Register</h2>
+        <form action="/register/" class="form-signin" method="post">{% csrf_token %}
+            {{ form }}
+            <input type="submit" value="Register"/>
 
-    <h2>Register</h2>
-    <form action="/register/" method="post">{% csrf_token %}
-        {{ form }}
-        <input type="submit" value="Register" />
-
-    </form>
-
+        </form>
+    </div>
 {% endblock %}
