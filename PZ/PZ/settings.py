@@ -24,11 +24,7 @@ SECRET_KEY = '$^2_z%#h^5o45(&4wfkyzpyj7g3$1v8l8v*ih!@u^m3=-^h-#q'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-<<<<<<< HEAD
 ALLOWED_HOSTS = ['localhost', '127.0.0.1','wfiss-web.herokuapp.com']
-=======
-ALLOWED_HOSTS = []
->>>>>>> origin/dev
 
 # Application definition
 
