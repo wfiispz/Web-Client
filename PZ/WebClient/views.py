@@ -53,7 +53,7 @@ def create_monitor(request):
             args.update(csrf(request))
             args['error'] = 'You already created monitor with selected name or domain. Choose another one.'
 
-            return render_to_response('create_monitor.html', args)
+            return render_to_response('create_monitor.html', {"full_name": request.user.username}, args)
         else:
             m = Monitors(monitor_name=name, monitor_domain=domain, user_id=request.user)
             m.save()
@@ -61,7 +61,7 @@ def create_monitor(request):
             return HttpResponseRedirect("/monitors/")
 
     args.update(csrf(request))
-    return render_to_response('create_monitor.html', args)
+    return render_to_response('create_monitor.html', {"full_name": request.user.username}, args)
 
 
 def delete_monitor(request, monitor_id):
@@ -101,8 +101,12 @@ def hosts(request, monitor_id):
     current_monitor = Monitors.objects.get(id=monitor_id)
     c = Connector(urljoin(current_monitor.monitor_domain, 'resources'))
 
+    if request.method == 'GET':
+        search_query = request.GET.get('name', None)
+        c._payload = {"name": search_query}
+
     host_list, page = c.get_resources()
-    return render_to_response('hosts.html', {'monitor_domain' : current_monitor.monitor_domain, 'monitor_id' : monitor_id, 'host_list' : host_list})
+    return render_to_response('hosts.html', {"get_name": search_query, "full_name": request.user.username, 'monitor_domain' : current_monitor.monitor_domain, 'monitor_id' : monitor_id, 'host_list' : host_list})
 
 
 def measurements(request, monitor_id, host_id):
@@ -115,7 +119,7 @@ def measurements(request, monitor_id, host_id):
         value =  str(measurement.values)
         measurement.values = value.split('/')[len(value.split('/')) - 2]
 
-    return render_to_response('measurements.html', {'resources_list' : measurements_list, 'monitor_id' : monitor_id, 'host_id' : host_id})
+    return render_to_response('measurements.html', {"full_name": request.user.username, 'resources_list' : measurements_list, 'monitor_id' : monitor_id, 'host_id' : host_id})
 
 def values(request, monitor_id, host_id, measurement_id):
     c = Connector(Monitors.objects.get(id = monitor_id).monitor_domain)
@@ -128,4 +132,4 @@ def values(request, monitor_id, host_id, measurement_id):
     values_list = c.get_measurement_values(measurements_endpoint)
     print(values_list)
 
-    return render_to_response('values.html', {'values_list' : values_list})
+    return render_to_response('values.html', {"full_name": request.user.username, 'values_list' : values_list})
