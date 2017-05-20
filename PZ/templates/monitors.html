@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
+    <p align="right"><font color="white">Logged as {{ full_name }} </font></p>
+    <p align="right"><a href="/logout/">Logout</a></p>
     <div class="card card-container">
         <h2>Hi {{ full_name }} Logged in!</h2>
-        <p>Click <a href="/logout/">here</a> to logout.</p>
 
         <p>Here is your monitor list. You can simply <a href="/create_monitor/">add</a> a new monitor.</p>
 
