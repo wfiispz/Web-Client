@@ -87,5 +87,3 @@ class Connector(object):
 
     def delete_measurement(self, guid):
         self._response = requests.delete(urljoin(self._url_adr, guid))
-        self._json_data = json.loads(self._response.text)
-        return self._json_data
