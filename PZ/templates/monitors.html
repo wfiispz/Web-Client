@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-    <p align="right"><font color="white">Logged as {{ full_name }} </font></p>
-    <p align="right"><a href="/logout/">Logout</a></p>
+    {% include "logout_module.html" %}
     <div class="card card-container">
         <h2>Hi {{ full_name }} Logged in!</h2>
 

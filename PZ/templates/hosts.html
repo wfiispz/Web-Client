@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-    <p align="right"><font color="white">Logged as {{ full_name }} </font></p>
-    <p align="right"><a href="/logout/">Logout</a></p>
+    {% include "logout_module.html" %}
     <form type="get" action=".">
         {% if get_name != None %}
         <input  id="name" type="text" name="name"  placeholder="Name..." value= {{ get_name }} required="True">
