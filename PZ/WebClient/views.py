@@ -103,7 +103,7 @@ def hosts(request, monitor_id):
 
     if request.method == 'GET':
         search_query = request.GET.get('name', None)
-        c._payload = {"name": search_query}
+        c.payload = {"name": search_query}
 
     host_list, page = c.get_resources()
     return render_to_response('hosts.html', {"get_name": search_query, "full_name": request.user.username, 'monitor_domain' : current_monitor.monitor_domain, 'monitor_id' : monitor_id, 'host_list' : host_list})
