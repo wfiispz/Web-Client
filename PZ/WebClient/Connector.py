@@ -43,8 +43,7 @@ class Connector(object):
 
     def delete_resource(self, guid):
         self._response = requests.delete(urljoin(self._url_adr, guid))
-        self._json_data = json.loads(self._response.text)
-        return self._json_data
+        return self._response.status_code
 
     def get_measurements(self, endpoints):
         measurements_list = []
@@ -79,11 +78,12 @@ class Connector(object):
 
     def delete_measurement_values(self, guid):
         self._response = requests.delete(urljoin(self._url_adr, guid + 'values'))
-        self._json_data = json.loads(self._response.text)
-        return self._json_data
+        return self._response.status_code
 
     def post_measurements(self):
         self._response = requests.post(self._url_adr, data=json.dumps(self._payload))
+        return self._response.status_code
 
     def delete_measurement(self, guid):
         self._response = requests.delete(urljoin(self._url_adr, guid))
+        return self._response.status_code
