@@ -65,11 +65,8 @@ class Connector(object):
 
     def get_measurement_values(self, endpoint):
         values = []
-        print(endpoint + '/values')
         self._response = requests.get(endpoint + '/values', params=self._payload)
         self._json_data = json.loads(self._response.text)
-
-        print(self._json_data)
 
         for item in self._json_data['values']:
             values.append(Values(value=item['value'], datetime=item['timestamp']))

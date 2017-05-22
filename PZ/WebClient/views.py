@@ -4,7 +4,10 @@ from django.contrib import auth
 from django.template.context_processors import csrf
 from django.contrib.auth.forms import UserCreationForm
 from django.db.models import Q
+
 from .Connector import *
+
+from datetime import datetime, timedelta
 
 
 def index(request):
@@ -99,37 +102,54 @@ def register(request):
 
 def hosts(request, monitor_id):
     current_monitor = Monitors.objects.get(id=monitor_id)
-    c = Connector(urljoin(current_monitor.monitor_domain, 'resources'))
+    connection = Connector(urljoin(current_monitor.monitor_domain, 'resources'))
 
     if request.method == 'GET':
         search_query = request.GET.get('name', None)
-        c.payload = {"name": search_query}
+        connection.payload = {"name": search_query}
 
-    host_list, page = c.get_resources()
+    host_list, page = connection.get_resources()
     return render_to_response('hosts.html', {"get_name": search_query, "full_name": request.user.username, 'monitor_domain' : current_monitor.monitor_domain, 'monitor_id' : monitor_id, 'host_list' : host_list})
 
 
 def measurements(request, monitor_id, host_id):
-    c = Connector(Monitors.objects.get(id = monitor_id).monitor_domain)
+    current_monitor = Monitors.objects.get(id=monitor_id)
+    connection = Connector(current_monitor.monitor_domain)
 
-    measurements_endpoints = c.get_resource_id('resources/' + host_id).measurements
-    measurements_list = c.get_measurements(str(measurements_endpoints).replace("\'", "\""))
+    measurements_endpoints = connection.get_resource_id('resources/' + host_id).measurements
+    measurements_list = connection.get_measurements(str(measurements_endpoints).replace("\'", "\""))
 
     for measurement in measurements_list:
         value =  str(measurement.values)
         measurement.values = value.split('/')[len(value.split('/')) - 2]
 
-    return render_to_response('measurements.html', {"full_name": request.user.username, 'resources_list' : measurements_list, 'monitor_id' : monitor_id, 'host_id' : host_id})
+    return render_to_response('measurements.html', {"full_name": request.user.username, 'monitor_domain' : current_monitor.monitor_domain, 'resources_list' : measurements_list, 'monitor_id' : monitor_id, 'host_id' : host_id})
 
-def values(request, monitor_id, host_id, measurement_id):
-    c = Connector(Monitors.objects.get(id = monitor_id).monitor_domain)
 
-    measurements_endpoints = c.get_resource_id('resources/' + host_id).measurements
+def values(request, monitor_id, host_id, measurement_id, page_id = 1):
+    current_monitor = Monitors.objects.get(id=monitor_id)
+    connection = Connector(current_monitor.monitor_domain)
+
+    measurements_endpoints = connection.get_resource_id('resources/' + host_id).measurements
     for endpoint in measurements_endpoints:
         if endpoint.__contains__(measurement_id):
             measurements_endpoint = endpoint
 
-    values_list = c.get_measurement_values(measurements_endpoint)
-    print(values_list)
+    connection.payload = {"from" : datetime.now() - timedelta(minutes= int(page_id) * 1), "to" : datetime.now() - timedelta(minutes= (int(page_id) - 1) * 1)}
+    values_list = connection.get_measurement_values(measurements_endpoint)
+    values_list.reverse()
 
-    return render_to_response('values.html', {"full_name": request.user.username, 'values_list' : values_list})
+    connection.payload = {"from" : datetime.now() - timedelta(minutes= (int(page_id)+1) * 1), "to" : datetime.now() - timedelta(minutes= int(page_id) * 1)}
+    next_values_list = connection.get_measurement_values(measurements_endpoint)
+
+    if int(page_id) <= 1:
+        previous_index = int(page_id)
+        next_index = int(page_id) + 1
+    else:
+        previous_index = int(page_id) - 1
+        next_index = int(page_id) + 1
+
+    if not next_values_list:
+        next_index = int(page_id)
+
+    return render_to_response('values.html', {'full_name': request.user.username, 'monitor_domain' : current_monitor.monitor_domain, 'values_list': values_list,  'monitor_id' : monitor_id, 'host_id' : host_id, 'measurement_id': measurement_id, 'previous_index': previous_index, 'next_index': next_index})
