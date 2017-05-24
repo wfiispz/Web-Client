@@ -167,7 +167,7 @@ def graph(request, monitor_id, host_id, measurement_id):
     values_list = c.get_measurement_values(measurements_endpoint)
 
     data = [
-        ['DateTime', 'values']
+        ['datetime', 'values']
     ]
 
     for val in values_list:
@@ -176,7 +176,6 @@ def graph(request, monitor_id, host_id, measurement_id):
     data_source = SimpleDataSource(data=data)
 
     chart = LineChart(data_source)
-
     return render_to_response('graph.html',
                               {"full_name": request.user.username, 'values_list': values_list, 'monitor_id': monitor_id,
                                'host_id': host_id, 'measurement_id': measurement_id, 'chart': chart})
@@ -193,17 +192,15 @@ def update_graph(request, monitor_id, host_id, measurement_id):
     values_list = c.get_measurement_values(measurements_endpoint)
 
     data = [
-        ['DateTime', 'values']
+        ['datetime', 'values']
     ]
 
     for val in values_list:
         data.append([val.datetime, val.value])
 
+
     data_source = SimpleDataSource(data=data)
-
     chart = LineChart(data_source)
-
-    chart.get_options_json = '{"title": "Chart"}'
     return render(request, 'update_graph.html',
                   {"full_name": request.user.username, 'values_list': values_list, 'monitor_id': monitor_id,
                    'host_id': host_id, 'measurement_id': measurement_id, 'chart': chart})
@@ -224,5 +221,4 @@ def archives(request, monitor_id):
         measurement.values = value.split('/')[len(value.split('/')) - 2]
         measurement.host = host.split('/')[4]
 
-    return render_to_response('archives.html', {'host_list': host_list, 'measurements_list': measurements_list,
-                                                'monitor_id': monitor_id})
+    return render_to_response('archives.html', {'host_list': host_list, 'measurements_list': measurements_list, 'monitor_id': monitor_id})
