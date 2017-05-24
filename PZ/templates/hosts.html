@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-    <p align="right"><font color="white">Logged as {{ full_name }} </font></p>
-    <p align="right"><a href="/logout/">Logout</a></p>
+    {% include "logout_module.html" %}
     <form type="get" action=".">
         {% if get_name != None %}
         <input  id="name" type="text" name="name"  placeholder="Name..." value= {{ get_name }} required="True">
@@ -10,8 +9,8 @@
         {% endif %}
         <button id="search_submit" type="submit" >Search</button>
     </form>
-    <a href="{% url 'archives' monitor_id%}">Archives</a>
     <div class="card list-container">
+        <p>{{ monitor_domain }}</p>
         <table class="table table-striped table-bordered">
             <tr>
                 <th>Id</th>

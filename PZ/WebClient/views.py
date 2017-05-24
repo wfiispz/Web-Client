@@ -9,7 +9,7 @@ from django.shortcuts import render
 from graphos.sources.simple import SimpleDataSource
 
 from graphos.renderers.yui import LineChart
-
+from datetime import datetime, timedelta
 
 def index(request):
     if request.user.is_authenticated():
