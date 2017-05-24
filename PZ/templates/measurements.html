@@ -2,9 +2,10 @@
 {% block content %}
     {% include "logout_module.html" %}
     <div class="card list-container">
+        <p>{{ monitor_domain }} > {{ host_id }}</p>
         <table class="table table-striped table-bordered">
             <tr>
-                <th>Host</th>
+                <th>Measurement</th>
                 <th>Metric</th>
                 <th>Unit</th>
                 <th>Max. value</th>
