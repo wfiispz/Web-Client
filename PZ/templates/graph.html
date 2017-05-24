@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+    <p align="right"><font color="white">Logged as {{ full_name }} </font></p>
+    <p align="right"><a href="/logout/">Logout</a></p>
+    <div class="card list-container" id="graph">
+            {{ chart.as_html }}
+    </div>
+        <script>
+        setInterval(function () {
+            $.ajax({
+                type: "GET",
+                url: '{% url 'update_graph' monitor_id host_id measurement_id %}',  // URL to your view that serves new info
+            })
+                .done(function (response) {
+                    $('#graph').html(response);
+                });
+        }, 5000)
+    </script>
+{% endblock %}
