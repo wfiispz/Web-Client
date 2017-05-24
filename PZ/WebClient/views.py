@@ -4,11 +4,12 @@ from django.contrib import auth
 from django.template.context_processors import csrf
 from django.contrib.auth.forms import UserCreationForm
 from django.db.models import Q
-
 from .Connector import *
+from django.shortcuts import render
+from graphos.sources.simple import SimpleDataSource
 
+from graphos.renderers.yui import LineChart
 from datetime import datetime, timedelta
-
 
 def index(request):
     if request.user.is_authenticated():
@@ -84,6 +85,7 @@ def logout(request):
 def register_success(request):
     return render_to_response('register_success.html')
 
+
 def register(request):
     if request.method == "POST":
         form = UserCreationForm(request.POST)
@@ -153,3 +155,70 @@ def values(request, monitor_id, host_id, measurement_id, page_id = 1):
         next_index = int(page_id)
 
     return render_to_response('values.html', {'full_name': request.user.username, 'monitor_domain' : current_monitor.monitor_domain, 'values_list': values_list,  'monitor_id' : monitor_id, 'host_id' : host_id, 'measurement_id': measurement_id, 'previous_index': previous_index, 'next_index': next_index})
+
+def graph(request, monitor_id, host_id, measurement_id):
+    c = Connector(Monitors.objects.get(id=monitor_id).monitor_domain)
+
+    measurements_endpoints = c.get_resource_id('resources/' + host_id).measurements
+    for endpoint in measurements_endpoints:
+        if endpoint.__contains__(measurement_id):
+            measurements_endpoint = endpoint
+
+    values_list = c.get_measurement_values(measurements_endpoint)
+
+    data = [
+        ['datetime', 'values']
+    ]
+
+    for val in values_list:
+        data.append([val.datetime, val.value])
+
+    data_source = SimpleDataSource(data=data)
+
+    chart = LineChart(data_source)
+    return render_to_response('graph.html',
+                              {"full_name": request.user.username, 'values_list': values_list, 'monitor_id': monitor_id,
+                               'host_id': host_id, 'measurement_id': measurement_id, 'chart': chart})
+
+
+def update_graph(request, monitor_id, host_id, measurement_id):
+    c = Connector(Monitors.objects.get(id=monitor_id).monitor_domain)
+
+    measurements_endpoints = c.get_resource_id('resources/' + host_id).measurements
+    for endpoint in measurements_endpoints:
+        if endpoint.__contains__(measurement_id):
+            measurements_endpoint = endpoint
+
+    values_list = c.get_measurement_values(measurements_endpoint)
+
+    data = [
+        ['datetime', 'values']
+    ]
+
+    for val in values_list:
+        data.append([val.datetime, val.value])
+
+
+    data_source = SimpleDataSource(data=data)
+    chart = LineChart(data_source)
+    return render(request, 'update_graph.html',
+                  {"full_name": request.user.username, 'values_list': values_list, 'monitor_id': monitor_id,
+                   'host_id': host_id, 'measurement_id': measurement_id, 'chart': chart})
+
+def archives(request, monitor_id):
+    current_monitor = Monitors.objects.get(id=monitor_id)
+    c = Connector(urljoin(current_monitor.monitor_domain, 'resources'))
+
+    host_list, page = c.get_resources()
+    measurements_list = []
+    for host in host_list:
+        m1 = host.measurements
+        measurements_list = measurements_list + c.get_measurements(str(m1).replace("\'", "\""))
+
+    for measurement in measurements_list:
+        value = str(measurement.values)
+        host = str(measurement.host)
+        measurement.values = value.split('/')[len(value.split('/')) - 2]
+        measurement.host = host.split('/')[4]
+
+    return render_to_response('archives.html', {'host_list': host_list, 'measurements_list': measurements_list, 'monitor_id': monitor_id})
