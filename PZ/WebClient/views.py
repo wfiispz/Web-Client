@@ -1,4 +1,4 @@
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, render
 from django.http import HttpResponseRedirect
 from django.contrib import auth
 from django.template.context_processors import csrf
@@ -65,7 +65,7 @@ def create_monitor(request):
             return HttpResponseRedirect("/monitors/")
 
     args.update(csrf(request))
-    return render_to_response('create_monitor.html', {"full_name": request.user.username}, args)
+    return render(request, 'create_monitor.html', {"full_name": request.user.username}, args)
 
 
 def delete_monitor(request, monitor_id):
