@@ -102,12 +102,6 @@ class ConnectorTests(TestCase):
         con = Connector(url_resources)
         self.assertEquals(404, con.delete_resource(guid))
 
-    # @mock.patch('requests.get', side_effect=mocked_requests_get)
-    # def test_get_measurements(self, mock_get):
-    #     print("Tests does get_measurements returns not empty list of measurements")
-    #     con = Connector(url_measurements)
-    #     self.assertTrue(len(con.get_measurements(endpoints) > 0))
-
     @mock.patch('requests.get', side_effect=mocked_requests_get)
     def test_get_measurement(self, mock_get):
         print("Tests does get_measurement returns measurement")
@@ -119,12 +113,6 @@ class ConnectorTests(TestCase):
         print("Tests if get_measurement returns Resources object")
         connector = Connector(url_measurements)
         self.assertIsInstance(connector.get_measurement(endpoint), Measurements)
-
-    # @mock.patch('requests.get', side_effect=mocked_requests_get)
-    # def test_get_measurement_values(self, mock_get):
-    #     print("Tests if get_measurement_values returns proper values - empty list")
-    #     connector = Connector(endpoint2)
-    #     self.assertTrue(len(connector.get_measurement_values(endpoint2)) == 0)
 
     def test_delete_measurement_values(self):
         print("Tests if delete_measuremnt_values returns empty json")
