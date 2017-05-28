@@ -37,4 +37,7 @@ urlpatterns = [
     url(r'^monitor/(?P<monitor_id>[0-9]+)/host/(?P<host_id>[\w-]+)/$', views.measurements, name='measurement'),
     url(r'^monitor/(?P<monitor_id>[0-9]+)/host/(?P<host_id>[\w-]+)/measurements/(?P<measurement_id>[\w-]+)$', views.values, name='value'),
     url(r'^monitor/(?P<monitor_id>[0-9]+)/host/(?P<host_id>[\w-]+)/measurements/(?P<measurement_id>[\w-]+)/(?P<page_id>[0-9]+)$', views.values, name='value'),
+    url(r'^monitor/(?P<monitor_id>[0-9]+)/host/(?P<host_id>[\w-]+)/measurements/(?P<measurement_id>[\w-]+)/clear$', views.delete_values, name='clear_values'),
+    url(r'^monitor/(?P<monitor_id>[0-9]+)/host/(?P<host_id>[\w-]+)/measurements/(?P<measurement_id>[\w-]+)/complex$', views.create_complex, name='add_complex'),
+    url(r'^monitor/(?P<monitor_id>[0-9]+)/host/(?P<host_id>[\w-]+)/measurements/(?P<measurement_id>[\w-]+)/delete_complex$', views.delete_complex, name='remove_complex')
 ]
