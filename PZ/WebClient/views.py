@@ -167,6 +167,42 @@ def values(request, monitor_id, host_id, measurement_id, page_id=1):
                    'measurement_id': measurement_id, 'previous_index': previous_index, 'next_index': next_index})
 
 
+def delete_values(request, monitor_id, host_id, measurement_id):
+    current_monitor = Monitors.objects.get(id=monitor_id)
+    connection = Connector(current_monitor.monitor_domain + 'measurements/')
+    connection.delete_measurement_values(measurement_id)
+
+    return HttpResponseRedirect('/monitor/' + monitor_id + '/host/' + host_id + '/measurements/' + measurement_id)
+
+
+def create_complex(request, monitor_id, host_id, measurement_id):
+    current_monitor = Monitors.objects.get(id=monitor_id)
+    connection = Connector(current_monitor.monitor_domain + 'measurements/')
+
+    if request.POST:
+        frequency = request.POST.get('frequency', None)
+        window_size = request.POST.get('window_size', None)
+        description = request.POST.get('description', None)
+
+        connection.payload = {'baseMeasurement': measurement_id, 'description': description,
+                              'frequency': int(frequency) * 1000, 'windowsize': int(window_size) * 1000}
+        connection.post_measurements()
+
+        return HttpResponseRedirect('/monitor/' + monitor_id + '/host/' + host_id)
+
+    return render(request, 'create_complex.html', {'monitor_domain': current_monitor.monitor_domain,
+                                                   'monitor_id': monitor_id, 'host_id': host_id,
+                                                   'measurement_id': measurement_id})
+
+
+def delete_complex(request, monitor_id, host_id, measurement_id):
+    current_monitor = Monitors.objects.get(id=monitor_id)
+    connection = Connector(current_monitor.monitor_domain + 'measurements/')
+    connection.delete_measurement(measurement_id)
+
+    return HttpResponseRedirect('/monitor/' + monitor_id + '/host/' + host_id)
+
+
 def graph(request, monitor_id, host_id, measurement_id):
     c = Connector(Monitors.objects.get(id=monitor_id).monitor_domain)
 
@@ -222,6 +258,7 @@ def update_graph(request, monitor_id, host_id, measurement_id):
     return render(request, 'update_graph.html',
                   {"full_name": request.user.username, 'values_list': values_list, 'monitor_id': monitor_id,
                    'host_id': host_id, 'measurement_id': measurement_id, 'div': chart.render_html(), 'js':js})
+
 
 
 def archives(request, monitor_id):

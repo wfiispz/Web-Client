@@ -24,7 +24,8 @@ class Connector(object):
 
     def get_resources(self):
         resources_list = []
-        self._response = requests.get(self._url_adr, params=self._payload)
+        self._response = requests.get(urljoin(self._url_adr, '/resources'), params=self._payload)
+
         self._json_data = json.loads(self._response.text)
 
         for item in self._json_data['resources']:
@@ -36,13 +37,13 @@ class Connector(object):
         return resources_list, page
 
     def get_resource_id(self, guid):
-        self._response = requests.get(urljoin(self._url_adr, guid))
+        self._response = requests.get(urljoin(self._url_adr, 'resources')+'/'+guid)
         self._json_data = json.loads(self._response.text)
         return Resources(resource_id=self._json_data['id'], name=self._json_data['name'],
                          description=self._json_data['description'], measurements=self._json_data['measurements'])
 
     def delete_resource(self, guid):
-        self._response = requests.delete(urljoin(self._url_adr, guid))
+        self._response = requests.delete(urljoin(self._url_adr, 'resources') +'/'+guid)
         return self._response.status_code
 
     def get_measurements(self, endpoints):
@@ -74,13 +75,15 @@ class Connector(object):
         return values
 
     def delete_measurement_values(self, guid):
-        self._response = requests.delete(urljoin(self._url_adr, guid + 'values'))
+        self._response = requests.delete(urljoin(self._url_adr, 'measurements')+ '/' +guid + '/values')
         return self._response.status_code
 
     def post_measurements(self):
-        self._response = requests.post(self._url_adr, data=json.dumps(self._payload))
+        headers = {'content-type': 'application/json'}
+        self._response = requests.post(urljoin(self._url_adr, 'measurements'), data=json.dumps(self._payload),
+                                       headers={'content-type': 'application/json'})
         return self._response.status_code
 
     def delete_measurement(self, guid):
-        self._response = requests.delete(urljoin(self._url_adr, guid))
+        self._response = requests.delete(urljoin(self._url_adr, 'measurements')+ '/' +guid)
         return self._response.status_code
