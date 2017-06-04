@@ -75,7 +75,7 @@ class Connector(object):
         return values
 
     def delete_measurement_values(self, guid):
-        self._response = requests.delete(urljoin(self._url_adr, 'measurements')+'/'+guid + '/values')
+        self._response = requests.delete(urljoin(self._url_adr, 'measurements')+ '/' +guid + '/values')
         return self._response.status_code
 
     def post_measurements(self):
@@ -85,5 +85,5 @@ class Connector(object):
         return self._response.status_code
 
     def delete_measurement(self, guid):
-        self._response = requests.delete(urljoin(self._url_adr, 'measurements')+'/'+guid)
+        self._response = requests.delete(urljoin(self._url_adr, 'measurements')+ '/' +guid)
         return self._response.status_code
