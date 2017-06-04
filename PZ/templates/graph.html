@@ -2,17 +2,19 @@
 {% block content %}
     {% include "logout_module.html" %}
     <div class="card list-container" id="graph">
-            {{ chart.as_html }}
+        {{ div | safe }}
+        {{ js | safe }}
     </div>
-        <script>
-        setInterval(function () {
-            $.ajax({
-                type: "GET",
-                url: '{% url 'update_graph' monitor_id host_id measurement_id %}',  // URL to your view that serves new info
-            })
-                .done(function (response) {
-                    $('#graph').html(response);
-                });
-        }, 5000)
+    <script>
+            setInterval(function () {
+                $.ajax({
+                    type: "GET",
+                    url: '{% url 'update_graph' monitor_id host_id measurement_id %}',  // URL to your view that serves new info
+                    async: false,
+                    success: function (response) {
+                        $('#graph').html(response);
+                    }
+                })
+            }, 1000)
     </script>
 {% endblock %}

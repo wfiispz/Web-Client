@@ -9,6 +9,7 @@
                 <th>Unit</th>
                 <th>Max. value</th>
                 <th>Action</th>
+                <th>Graph</th>
             </tr>
             {% for resource in resources_list %}
                 <tr>
@@ -17,6 +18,7 @@
                     <td>{{ resource.unit }}</td>
                     <td>{{ resource.max_value }}</td>
                     <td><a href="{% url 'value' monitor_id host_id resource.values %}">show values</a></td>
+                    <td><a href="{% url 'graph' monitor_id host_id resource.values %}">Generate graph</a></td>
                 </tr>
             {% endfor %}
         </table>
