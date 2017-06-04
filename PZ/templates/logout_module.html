@@ -1,0 +1,25 @@
+{% load static %}
+<p align="right"><font color="white">Logged as {{ full_name }} </font></p>
+<p align="right"><a href="/logout/">Logout</a></p>
+<p>
+<a href="/monitors/"><img src="{% static 'images\home.png' %}"/></a>
+{% if 'create_monitor/' in request.path %}
+    <a href="/create_monitor">Create Monitor </a>/
+{% elif 'monitor/' in request.path %}
+    <a href="/monitor/{{ monitor_id }}">Monitor </a>/
+    {% if 'host/' in request.path %}
+        <a href="/monitor/{{ monitor_id }}/host/{{ host_id }}">Host </a>/
+    {% endif %}
+    {% if 'measurements/' in request.path %}
+        <a href="/monitor/{{ monitor_id }}/host/{{ host_id }}/measurements/{{ measurement_id }}">Measurements </a>/
+    {% endif %}
+    {% if 'complex' in request.path %}
+        New complex type
+    {% endif %}
+{% elif 'archives/' in request.path %}
+    <a href="/archives/{{ monitor_id }}">Archives </a>/
+    {% if 'host/' in request.path %}
+        <a href="/archives/{{ monitor_id }}/host/{{ host_id }}/measurements/{{ measurement_id }}">Graph </a>/
+    {% endif %}
+{% endif %}
+</p>

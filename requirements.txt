@@ -1,0 +1,4 @@
+Django==1.11.1
+requests==2.14.2
+whitenoise==3.3.0
+django-graphos-3==1.1

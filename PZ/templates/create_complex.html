@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+    {% include "logout_module.html" %}
+    <div class="card card-container">
+        <p>Complex measurement creation form</p>
+
+        {% if error %}
+            <p>{{ error }}</p>
+        {% endif %}
+
+        <form action="{% url 'add_complex' monitor_id host_id measurement_id %}" method="post">{% csrf_token %}
+            <label for="freqency">Measurement frequency (seconds)</label>
+            <input type="number" name="frequency" value="" id="frequency" required><br>
+            <label for="window_size">Measurement window (seconds)</label>
+            <input type="number" name="window_size" value="" id="window_size" required><br>
+            <label for="description">Description</label>
+            <input type="text" name="description" value="" id="description" required><br>
+            <input type="submit" value="add"/>
+        </form>
+    </div>
+{% endblock %}
