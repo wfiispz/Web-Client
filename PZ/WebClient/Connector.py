@@ -24,7 +24,8 @@ class Connector(object):
 
     def get_resources(self):
         resources_list = []
-        self._response = requests.get(self._url_adr, params=self._payload)
+        self._response = requests.get(urljoin(self._url_adr, '/resources'), params=self._payload,
+                                      auth=('user', 'password'))
         self._json_data = json.loads(self._response.text)
 
         for item in self._json_data['resources']:
@@ -36,13 +37,13 @@ class Connector(object):
         return resources_list, page
 
     def get_resource_id(self, guid):
-        self._response = requests.get(urljoin(self._url_adr, guid))
+        self._response = requests.get(urljoin(self._url_adr, 'resources') + '/' + guid, auth=('user', 'password'))
         self._json_data = json.loads(self._response.text)
         return Resources(resource_id=self._json_data['id'], name=self._json_data['name'],
                          description=self._json_data['description'], measurements=self._json_data['measurements'])
 
     def delete_resource(self, guid):
-        self._response = requests.delete(urljoin(self._url_adr, guid))
+        self._response = requests.delete(urljoin(self._url_adr, 'resources') + '/' + guid, auth=('user', 'password'))
         return self._response.status_code
 
     def get_measurements(self, endpoints):
@@ -52,12 +53,12 @@ class Connector(object):
         for endpoint in endpoints_data:
             measurements_list.append(self.get_measurement(endpoint))
 
-        #page = Page(size=self._json_data['page']['number'], number=self._json_data['page']['totalCount'],
+        # page = Page(size=self._json_data['page']['number'], number=self._json_data['page']['totalCount'],
         #            total_count=self._json_data['page']['size'])
         return measurements_list
 
     def get_measurement(self, endpoint):
-        self._response = requests.get(endpoint)
+        self._response = requests.get(endpoint, auth=('user', 'password'))
         self._json_data = json.loads(self._response.text)
         return Measurements(host=self._json_data['host'], metric=self._json_data['metric'],
                             unit=self._json_data['unit'], max_value=self._json_data['maxValue'],
@@ -65,7 +66,7 @@ class Connector(object):
 
     def get_measurement_values(self, endpoint):
         values = []
-        self._response = requests.get(endpoint + '/values', params=self._payload)
+        self._response = requests.get(endpoint + '/values', params=self._payload, auth=('user', 'password'))
         self._json_data = json.loads(self._response.text)
 
         for item in self._json_data['values']:
@@ -74,13 +75,17 @@ class Connector(object):
         return values
 
     def delete_measurement_values(self, guid):
-        self._response = requests.delete(urljoin(self._url_adr, guid) + '/values')
+        self._response = requests.delete(urljoin(self._url_adr, 'measurements') + '/' + guid + '/values',
+                                         headers={'content-type': 'application/json'}, auth=('user', 'password'))
         return self._response.status_code
 
     def post_measurements(self):
-        self._response = requests.post(self._url_adr, data=json.dumps(self._payload))
+        headers = {'content-type': 'application/json'}
+        self._response = requests.post(urljoin(self._url_adr, 'measurements'), data=json.dumps(self._payload),
+                                       headers={'content-type': 'application/json'}, auth=('user', 'password'))
         return self._response.status_code
 
     def delete_measurement(self, guid):
-        self._response = requests.delete(urljoin(self._url_adr, guid))
+        self._response = requests.delete(urljoin(self._url_adr, 'measurements') + '/' + guid,
+                                         headers={'content-type': 'application/json'}, auth=('user', 'password'))
         return self._response.status_code

@@ -11,9 +11,9 @@
 
         <form action="/create_monitor/" method="post">{% csrf_token %}
             <label for="monitor_name">Monitor name</label>
-            <input type="text" name="monitor_name" value="" id="monitor_name">
+            <input type="text" name="monitor_name" value="" id="monitor_name" required><br>
             <label for="monitor_domain">Monitor domain</label>
-            <input type="text" name="monitor_domain" value="" id="monitor_domain">
+            <input type="text" name="monitor_domain" value="" id="monitor_domain" required><br>
 
             <input type="submit" value="add"/>
 

@@ -2,7 +2,7 @@
 {% block content %}
     {% include "logout_module.html" %}
     <div class="card list-container">
-        <p><a href="{% url 'add_complex' monitor_id host_id measurement_id %}">Add complex</a></p>
+        {% if not complex %}<p><a href="{% url 'add_complex' monitor_id host_id measurement_id %}">Add complex</a></p>{% endif %}
         <table class="table table-striped table-bordered">
             <tr>
                 <th>Datetime</th>

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block content %}
     {% include "logout_module.html" %}
     <div class="card list-container">
@@ -13,12 +14,12 @@
             </tr>
             {% for resource in resources_list %}
                 <tr>
-                    <td>{% if resource.complex %} complex {% else %} standard {% endif %}</td>
+                    <td>{% if resource.complex_mes %} <img src="{% static 'images\complex.png' %}"/> {% else %} <img src="{% static 'images\std.png' %}"/> {% endif %}</td>
                     <td>{{ resource.host }}</td>
                     <td>{{ resource.metric }}</td>
                     <td>{{ resource.unit }}</td>
                     <td>{{ resource.max_value }}</td>
-                    <td><a href="{% url 'value' monitor_id host_id resource.values %}">show values</a> | <a href="{% url 'clear_values' monitor_id host_id resource.values %}">clear values</a> {% if resource.complex %} | <a href="{% url 'remove_complex' monitor_id host_id resource.values %}">remove complex</a>{% endif %}</td>
+                    <td><a href="{% url 'value' monitor_id host_id resource.values %}">show values</a> {% if not resource.complex_mes %} | <a href="{% url 'clear_values' monitor_id host_id resource.values %}">clear values</a> {%  endif %}{% if resource.complex_mes %} | <a href="{% url 'remove_complex' monitor_id host_id resource.values %}">remove complex</a>{% endif %}</td>
                 </tr>
             {% endfor %}
         </table>

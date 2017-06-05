@@ -7,9 +7,9 @@ from django.db.models import Q
 from .Connector import *
 from django.shortcuts import render
 from graphos.sources.simple import SimpleDataSource
-
 from graphos.renderers.yui import LineChart
 from datetime import datetime, timedelta
+from urllib.parse import urlparse
 
 
 def index(request):
@@ -53,12 +53,22 @@ def create_monitor(request):
         name = request.POST.get('monitor_name', '')
         domain = request.POST.get('monitor_domain', '')
 
+        parsed_url = urlparse(domain)
+
+        if not parsed_url.scheme or not parsed_url.netloc or not parsed_url.port:
+            args.update(csrf(request))
+
+            return render(request, 'create_monitor.html', {"full_name": request.user.username,
+                                                           'error': 'Domain address is invalid. Correct format is scheme://network_location:port/'},
+                          args)
+
         if Monitors.objects.filter(Q(monitor_name=name) | Q(monitor_domain=domain), user_id=request.user.id):
 
             args.update(csrf(request))
-            args['error'] = 'You already created monitor with selected name or domain. Choose another one.'
 
-            return render_to_response('create_monitor.html', {"full_name": request.user.username}, args)
+            return render(request, 'create_monitor.html', {"full_name": request.user.username,
+                                                           'error': 'You already created monitor with selected name or domain. Choose another one.'},
+                          args)
         else:
             m = Monitors(monitor_name=name, monitor_domain=domain, user_id=request.user)
             m.save()
@@ -105,7 +115,7 @@ def register(request):
 
 def hosts(request, monitor_id):
     current_monitor = Monitors.objects.get(id=monitor_id)
-    connection = Connector(urljoin(current_monitor.monitor_domain, 'resources'))
+    connection = Connector(current_monitor.monitor_domain)
 
     if request.method == 'GET':
         search_query = request.GET.get('name', None)
@@ -121,8 +131,8 @@ def measurements(request, monitor_id, host_id):
     current_monitor = Monitors.objects.get(id=monitor_id)
     connection = Connector(current_monitor.monitor_domain)
 
-    measurements_endpoints = connection.get_resource_id('resources/' + host_id).measurements
-    measurements_list = connection.get_measurements(str(measurements_endpoints).replace("\'", "\""))
+    measurements_endpoints = list(set(connection.get_resource_id(host_id).measurements))
+    measurements_list = connection.get_measurements(str(measurements_endpoints).replace("'", '"'))
 
     for measurement in measurements_list:
         value = str(measurement.values)
@@ -137,39 +147,52 @@ def values(request, monitor_id, host_id, measurement_id, page_id=1):
     current_monitor = Monitors.objects.get(id=monitor_id)
     connection = Connector(current_monitor.monitor_domain)
 
-    measurements_endpoints = connection.get_resource_id('resources/' + host_id).measurements
+    measurements_endpoints = list(set(connection.get_resource_id(host_id).measurements))
     for endpoint in measurements_endpoints:
         if endpoint.__contains__(measurement_id):
             measurements_endpoint = endpoint
 
-    connection.payload = {"from": datetime.now() - timedelta(minutes=int(page_id) * 1),
-                          "to": datetime.now() - timedelta(minutes=(int(page_id) - 1) * 1)}
-    values_list = connection.get_measurement_values(measurements_endpoint)
+    measurement = connection.get_measurement(str(measurements_endpoint))
+
+    values_list = []
+
+    for i in range(0, 32):
+        connection.payload = {"from": datetime.now() - timedelta(minutes=15) * (i + 1),
+                              "to": datetime.now() - timedelta(minutes=15) * i}
+        values_list.extend(connection.get_measurement_values(measurements_endpoint))
+
     values_list.reverse()
 
-    connection.payload = {"from": datetime.now() - timedelta(minutes=(int(page_id) + 1) * 1),
-                          "to": datetime.now() - timedelta(minutes=int(page_id) * 1)}
-    next_values_list = connection.get_measurement_values(measurements_endpoint)
+    page_id = int(page_id)
+    print(values_list.__len__())
 
-    if int(page_id) <= 1:
-        previous_index = int(page_id)
-        next_index = int(page_id) + 1
+    if values_list.__len__() > page_id * 20:
+        if page_id is 1:
+            previous_index = page_id
+        else:
+            previous_index = page_id - 1
+
+        next_index = page_id + 1
     else:
-        previous_index = int(page_id) - 1
-        next_index = int(page_id) + 1
+        if page_id is 1:
+            previous_index = page_id
+        else:
+            previous_index = page_id - 1
 
-    if not next_values_list:
-        next_index = int(page_id)
+        next_index = page_id
+
+    values_list = values_list[(page_id - 1) * 20:page_id * 20]
 
     return render(request, 'values.html',
                   {'full_name': request.user.username, 'monitor_domain': current_monitor.monitor_domain,
                    'values_list': values_list, 'monitor_id': monitor_id, 'host_id': host_id,
-                   'measurement_id': measurement_id, 'previous_index': previous_index, 'next_index': next_index})
+                   'measurement_id': measurement_id, 'previous_index': previous_index, 'next_index': next_index,
+                   'complex': measurement.complex_mes})
 
 
 def delete_values(request, monitor_id, host_id, measurement_id):
     current_monitor = Monitors.objects.get(id=monitor_id)
-    connection = Connector(current_monitor.monitor_domain + 'measurements/')
+    connection = Connector(current_monitor.monitor_domain)
     connection.delete_measurement_values(measurement_id)
 
     return HttpResponseRedirect('/monitor/' + monitor_id + '/host/' + host_id + '/measurements/' + measurement_id)
@@ -177,7 +200,7 @@ def delete_values(request, monitor_id, host_id, measurement_id):
 
 def create_complex(request, monitor_id, host_id, measurement_id):
     current_monitor = Monitors.objects.get(id=monitor_id)
-    connection = Connector(current_monitor.monitor_domain + 'measurements/')
+    connection = Connector(current_monitor.monitor_domain)
 
     if request.POST:
         frequency = request.POST.get('frequency', None)
@@ -197,7 +220,7 @@ def create_complex(request, monitor_id, host_id, measurement_id):
 
 def delete_complex(request, monitor_id, host_id, measurement_id):
     current_monitor = Monitors.objects.get(id=monitor_id)
-    connection = Connector(current_monitor.monitor_domain + 'measurements/')
+    connection = Connector(current_monitor.monitor_domain)
     connection.delete_measurement(measurement_id)
 
     return HttpResponseRedirect('/monitor/' + monitor_id + '/host/' + host_id)
@@ -206,7 +229,7 @@ def delete_complex(request, monitor_id, host_id, measurement_id):
 def graph(request, monitor_id, host_id, measurement_id):
     c = Connector(Monitors.objects.get(id=monitor_id).monitor_domain)
 
-    measurements_endpoints = c.get_resource_id('resources/' + host_id).measurements
+    measurements_endpoints = c.get_resource_id(host_id).measurements
     for endpoint in measurements_endpoints:
         if endpoint.__contains__(measurement_id):
             measurements_endpoint = endpoint
@@ -231,7 +254,7 @@ def graph(request, monitor_id, host_id, measurement_id):
 def update_graph(request, monitor_id, host_id, measurement_id):
     c = Connector(Monitors.objects.get(id=monitor_id).monitor_domain)
 
-    measurements_endpoints = c.get_resource_id('resources/' + host_id).measurements
+    measurements_endpoints = c.get_resource_id(host_id).measurements
     for endpoint in measurements_endpoints:
         if endpoint.__contains__(measurement_id):
             measurements_endpoint = endpoint
@@ -254,7 +277,7 @@ def update_graph(request, monitor_id, host_id, measurement_id):
 
 def archives(request, monitor_id):
     current_monitor = Monitors.objects.get(id=monitor_id)
-    c = Connector(urljoin(current_monitor.monitor_domain, 'resources'))
+    c = Connector(current_monitor.monitor_domain)
 
     host_list, page = c.get_resources()
     measurements_list = []
