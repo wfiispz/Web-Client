@@ -1,4 +1,3 @@
-from django.shortcuts import render_to_response, render
 from django.http import HttpResponseRedirect
 from django.contrib import auth
 from django.template.context_processors import csrf
@@ -165,7 +164,6 @@ def values(request, monitor_id, host_id, measurement_id, page_id=1):
     values_list.reverse()
 
     page_id = int(page_id)
-    print(values_list.__len__())
 
     if values_list.__len__() > page_id * 20:
         if page_id is 1:
@@ -222,7 +220,7 @@ def create_complex(request, monitor_id, host_id, measurement_id):
 def delete_complex(request, monitor_id, host_id, measurement_id):
     current_monitor = Monitors.objects.get(id=monitor_id)
     connection = Connector(current_monitor.monitor_domain)
-    connection.delete_measurement(measurement_id)
+    print(connection.delete_measurement(measurement_id))
 
     return HttpResponseRedirect('/monitor/' + monitor_id + '/host/' + host_id)
 
@@ -248,12 +246,12 @@ def graph(request, monitor_id, host_id, measurement_id):
 
     chart = LineChart(data_source)
 
-    js = str(chart.render_js())
-    js = js.replace('google.setOnLoadCallback', 'google.charts.setOnLoadCallback')
+    html = str(chart.as_html())
+    html = html.replace('google.setOnLoadCallback', 'google.charts.setOnLoadCallback')
 
     return render(request, 'graph.html',
                   {"full_name": request.user.username, 'values_list': values_list, 'monitor_id': monitor_id,
-                   'host_id': host_id, 'measurement_id': measurement_id, 'div': chart.render_html(), 'js':js})
+                   'host_id': host_id, 'measurement_id': measurement_id, 'div': chart.as_html(), 'html': html})
 
 
 def update_graph(request, monitor_id, host_id, measurement_id):
@@ -276,13 +274,12 @@ def update_graph(request, monitor_id, host_id, measurement_id):
     data_source = SimpleDataSource(data=data)
     chart = LineChart(data_source)
 
-    js = str(chart.render_js())
-    js = js.replace('google.setOnLoadCallback', 'google.charts.setOnLoadCallback')
+    html = str(chart.as_html())
+    html = html.replace('google.setOnLoadCallback', 'google.charts.setOnLoadCallback')
 
     return render(request, 'update_graph.html',
                   {"full_name": request.user.username, 'values_list': values_list, 'monitor_id': monitor_id,
-                   'host_id': host_id, 'measurement_id': measurement_id, 'div': chart.render_html(), 'js':js})
-
+                   'host_id': host_id, 'measurement_id': measurement_id, 'div': chart.as_html(), 'html': html})
 
 
 def archives(request, monitor_id):
@@ -304,11 +301,12 @@ def archives(request, monitor_id):
     return render(request, 'archives.html',
                   {'host_list': host_list, 'measurements_list': measurements_list, 'monitor_id': monitor_id})
 
+
 def static_graph(request):
-    details=[]
-    data=[['datetime']]
-    value_list=[]
-    final_list=[]
+    details = []
+    data = [['datetime']]
+    value_list = []
+    final_list = []
     if request.method == 'POST':
 
         graph_data = request.POST.getlist('graph_data')
@@ -318,10 +316,10 @@ def static_graph(request):
 
         connection = Connector(Monitors.objects.get(id=details[0][0]).monitor_domain)
         connection.payload = {"from": datetime.now() - timedelta(minutes=19),
-                              "to": datetime.now()- timedelta(minutes=1)}
+                              "to": datetime.now() - timedelta(minutes=1)}
 
         for detail in details:
-            measurements_endpoints = connection.get_resource_id('resources/' + detail[1]).measurements
+            measurements_endpoints = connection.get_resource_id(detail[1]).measurements
             for endpoint in measurements_endpoints:
                 if endpoint.__contains__(detail[2]):
                     measurements_endpoint = endpoint
@@ -330,23 +328,21 @@ def static_graph(request):
                 value_list.append(val)
                 data[0].append(detail[2])
 
-
         if value_list:
-            for (i,list) in enumerate(value_list):
+            for (i, list) in enumerate(value_list):
                 for (j, val) in enumerate(list):
-                    if i==0:
+                    if i == 0:
                         final_list.append([val.datetime, val.value])
                     else:
-                        if val.datetime==final_list[j][0]:
+                        if val.datetime == final_list[j][0]:
                             final_list[j].append(val.value)
                         else:
                             final_list.append(val.datetime)
                             for x in i:
-                                if x==i:
+                                if x == i:
                                     final_list[j].append(val.value)
                                 else:
                                     final_list[j].append(0)
-
 
         for all in final_list:
             data.append(all)
@@ -354,7 +350,7 @@ def static_graph(request):
         data_source = SimpleDataSource(data=data)
         chart = LineChart(data_source)
 
-        js = str(chart.render_js())
-        js = js.replace('google.setOnLoadCallback', 'google.charts.setOnLoadCallback')
+        html = str(chart.as_html())
+        html = html.replace('google.setOnLoadCallback', 'google.charts.setOnLoadCallback')
 
-    return render(request, 'static_graph.html',{'div': chart.render_html(), 'js':js})
+    return render(request, 'static_graph.html', {'div': chart.as_html(), 'html': html})

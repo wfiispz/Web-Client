@@ -80,7 +80,6 @@ class Connector(object):
         return self._response.status_code
 
     def post_measurements(self):
-        headers = {'content-type': 'application/json'}
         self._response = requests.post(urljoin(self._url_adr, 'measurements'), data=json.dumps(self._payload),
                                        headers={'content-type': 'application/json'}, auth=('user', 'password'))
         return self._response.status_code
