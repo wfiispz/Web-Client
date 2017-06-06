@@ -2,10 +2,10 @@
 {% block content %}
     {% include "logout_module.html" %}
     <div class="card list-container" id="graph">
-        {{ div | safe }}
-        {{ html | safe }}
+        <form action="/export/" method="post">{% csrf_token %}
+            <input type=checkbox checked="checked" style="opacity:0" name="export_graph_data" value="{{ data }}">
+            <input type="submit" value=Export>
+            {{ html | safe }}
+        </form>
     </div>
 {% endblock %}
-<script>
-
-</script>

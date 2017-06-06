@@ -7,7 +7,8 @@ from .Connector import *
 from django.shortcuts import render
 from graphos.sources.simple import SimpleDataSource
 from graphos.renderers.gchart import LineChart
-
+from django.http import HttpResponse
+import csv
 from datetime import datetime, timedelta
 from urllib.parse import urlparse
 
@@ -279,7 +280,7 @@ def update_graph(request, monitor_id, host_id, measurement_id):
 
     return render(request, 'update_graph.html',
                   {"full_name": request.user.username, 'values_list': values_list, 'monitor_id': monitor_id,
-                   'host_id': host_id, 'measurement_id': measurement_id, 'div': chart.as_html(), 'html': html})
+                   'host_id': host_id, 'measurement_id': measurement_id, 'html': html})
 
 
 def archives(request, monitor_id):
@@ -353,4 +354,15 @@ def static_graph(request):
         html = str(chart.as_html())
         html = html.replace('google.setOnLoadCallback', 'google.charts.setOnLoadCallback')
 
-    return render(request, 'static_graph.html', {'div': chart.as_html(), 'html': html})
+    return render(request, 'static_graph.html', {'html': html, 'data':data})
+
+def export_graph_csv(request):
+    if request.method == 'POST':
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="graph.csv"'
+        export_graph_data = request.POST.getlist('export_graph_data')
+
+        writer = csv.writer(response)
+        writer.writerow(export_graph_data)
+
+    return response
