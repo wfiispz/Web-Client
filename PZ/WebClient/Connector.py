@@ -53,8 +53,6 @@ class Connector(object):
         for endpoint in endpoints_data:
             measurements_list.append(self.get_measurement(endpoint))
 
-        # page = Page(size=self._json_data['page']['number'], number=self._json_data['page']['totalCount'],
-        #            total_count=self._json_data['page']['size'])
         return measurements_list
 
     def get_measurement(self, endpoint):
