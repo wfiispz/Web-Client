@@ -135,7 +135,8 @@ def measurements(request, monitor_id, host_id):
     current_monitor = Monitors.objects.get(id=monitor_id)
     connection = Connector(current_monitor, request)
 
-    measurements_endpoints = list(set(connection.get_resource_id(host_id).measurements))
+    host = connection.get_resource_id(host_id)
+    measurements_endpoints = list(set(host.measurements))
     measurements_list = connection.get_measurements(str(measurements_endpoints).replace("'", '"'))
 
     for measurement in measurements_list:
@@ -144,7 +145,7 @@ def measurements(request, monitor_id, host_id):
 
     return render(request, 'measurements.html',
                   {"full_name": request.user.username, 'monitor_domain': current_monitor.monitor_domain,
-                   'resources_list': measurements_list, 'monitor_id': monitor_id, 'host_id': host_id})
+                   'resources_list': measurements_list, 'monitor_id': monitor_id, 'host_id': host_id, 'host': host})
 
 
 def values(request, monitor_id, host_id, measurement_id, page_id=1):
