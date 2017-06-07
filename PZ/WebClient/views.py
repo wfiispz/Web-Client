@@ -4,6 +4,7 @@ from django.template.context_processors import csrf
 from django.contrib.auth.forms import UserCreationForm
 from django.db.models import Q
 from .Connector import *
+from .Crypt import encode
 from django.shortcuts import render
 from graphos.sources.simple import SimpleDataSource
 from graphos.renderers.gchart import LineChart
@@ -53,6 +54,7 @@ def create_monitor(request):
     if request.method == "POST":
         name = request.POST.get('monitor_name', '')
         domain = request.POST.get('monitor_domain', '')
+        password = request.POST.get('monitor_password', '')
 
         parsed_url = urlparse(domain)
 
@@ -71,7 +73,8 @@ def create_monitor(request):
                                                            'error': 'You already created monitor with selected name or domain. Choose another one.'},
                           args)
         else:
-            m = Monitors(monitor_name=name, monitor_domain=domain, user_id=request.user)
+            m = Monitors(monitor_name=name, monitor_domain=domain, user_id=request.user,
+                         monitor_password=encode(request.user.password, password))
             m.save()
 
             return HttpResponseRedirect("/monitors/")
@@ -116,7 +119,7 @@ def register(request):
 
 def hosts(request, monitor_id):
     current_monitor = Monitors.objects.get(id=monitor_id)
-    connection = Connector(current_monitor.monitor_domain)
+    connection = Connector(current_monitor, request)
 
     if request.method == 'GET':
         search_query = request.GET.get('name', None)
@@ -130,7 +133,7 @@ def hosts(request, monitor_id):
 
 def measurements(request, monitor_id, host_id):
     current_monitor = Monitors.objects.get(id=monitor_id)
-    connection = Connector(current_monitor.monitor_domain)
+    connection = Connector(current_monitor, request)
 
     measurements_endpoints = list(set(connection.get_resource_id(host_id).measurements))
     measurements_list = connection.get_measurements(str(measurements_endpoints).replace("'", '"'))
@@ -146,7 +149,7 @@ def measurements(request, monitor_id, host_id):
 
 def values(request, monitor_id, host_id, measurement_id, page_id=1):
     current_monitor = Monitors.objects.get(id=monitor_id)
-    connection = Connector(current_monitor.monitor_domain)
+    connection = Connector(current_monitor, request)
 
     measurements_endpoints = list(set(connection.get_resource_id(host_id).measurements))
     for endpoint in measurements_endpoints:
@@ -192,7 +195,7 @@ def values(request, monitor_id, host_id, measurement_id, page_id=1):
 
 def delete_values(request, monitor_id, host_id, measurement_id):
     current_monitor = Monitors.objects.get(id=monitor_id)
-    connection = Connector(current_monitor.monitor_domain)
+    connection = Connector(current_monitor, request)
     connection.delete_measurement_values(measurement_id)
 
     return HttpResponseRedirect('/monitor/' + monitor_id + '/host/' + host_id + '/measurements/' + measurement_id)
@@ -200,7 +203,7 @@ def delete_values(request, monitor_id, host_id, measurement_id):
 
 def create_complex(request, monitor_id, host_id, measurement_id):
     current_monitor = Monitors.objects.get(id=monitor_id)
-    connection = Connector(current_monitor.monitor_domain)
+    connection = Connector(current_monitor, request)
 
     if request.POST:
         frequency = request.POST.get('frequency', None)
@@ -220,14 +223,14 @@ def create_complex(request, monitor_id, host_id, measurement_id):
 
 def delete_complex(request, monitor_id, host_id, measurement_id):
     current_monitor = Monitors.objects.get(id=monitor_id)
-    connection = Connector(current_monitor.monitor_domain)
-    print(connection.delete_measurement(measurement_id))
+    connection = Connector(current_monitor, request)
+    connection.delete_measurement(measurement_id)
 
     return HttpResponseRedirect('/monitor/' + monitor_id + '/host/' + host_id)
 
 
 def graph(request, monitor_id, host_id, measurement_id):
-    c = Connector(Monitors.objects.get(id=monitor_id).monitor_domain)
+    c = Connector(Monitors.objects.get(id=monitor_id), request)
 
     measurements_endpoints = c.get_resource_id(host_id).measurements
     for endpoint in measurements_endpoints:
@@ -256,7 +259,7 @@ def graph(request, monitor_id, host_id, measurement_id):
 
 
 def update_graph(request, monitor_id, host_id, measurement_id):
-    c = Connector(Monitors.objects.get(id=monitor_id).monitor_domain)
+    c = Connector(Monitors.objects.get(id=monitor_id), request)
 
     measurements_endpoints = c.get_resource_id(host_id).measurements
     for endpoint in measurements_endpoints:
@@ -285,7 +288,7 @@ def update_graph(request, monitor_id, host_id, measurement_id):
 
 def archives(request, monitor_id):
     current_monitor = Monitors.objects.get(id=monitor_id)
-    c = Connector(current_monitor.monitor_domain)
+    c = Connector(current_monitor, request)
 
     host_list, page = c.get_resources()
     measurements_list = []
@@ -315,9 +318,9 @@ def static_graph(request):
             splitted_data = graph.split("/")
             details.append([splitted_data[0], splitted_data[1], splitted_data[2]])
 
-        connection = Connector(Monitors.objects.get(id=details[0][0]).monitor_domain)
-        connection.payload = {"from": datetime.now() - timedelta(minutes=19),
-                              "to": datetime.now() - timedelta(minutes=1)}
+        connection = Connector(Monitors.objects.get(id=details[0][0]), request)
+        connection.payload = {"from": datetime.now() - timedelta(minutes=15),
+                              "to": datetime.now()}
 
         for detail in details:
             measurements_endpoints = connection.get_resource_id(detail[1]).measurements
@@ -343,7 +346,7 @@ def static_graph(request):
                                 if x == i:
                                     final_list[j].append(val.value)
                                 else:
-                                    final_list[j].append(0)
+                                    final_list[j].append(None)
 
         for all in final_list:
             data.append(all)
@@ -354,7 +357,8 @@ def static_graph(request):
         html = str(chart.as_html())
         html = html.replace('google.setOnLoadCallback', 'google.charts.setOnLoadCallback')
 
-    return render(request, 'static_graph.html', {'html': html, 'data':data})
+    return render(request, 'static_graph.html', {'html': html, 'data': data})
+
 
 def export_graph_csv(request):
     if request.method == 'POST':

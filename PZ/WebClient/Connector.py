@@ -2,11 +2,14 @@ import requests
 import json
 from urllib.parse import urljoin
 from .models import *
+from .Crypt import decode
 
 
 class Connector(object):
-    def __init__(self, url_adr):
-        self._url_adr = url_adr
+    def __init__(self, monitor, request):
+        self._url_adr = monitor.monitor_domain
+        self._credential = {'user': monitor.monitor_name,
+                            'password': decode(request.user.password, monitor.monitor_password)}
         self._response = None
         self._json_data = None
         self._payload = {}
@@ -25,7 +28,7 @@ class Connector(object):
     def get_resources(self):
         resources_list = []
         self._response = requests.get(urljoin(self._url_adr, '/resources'), params=self._payload,
-                                      auth=('user', 'password'))
+                                      auth=(self._credential['user'], self._credential['password']))
         self._json_data = json.loads(self._response.text)
 
         for item in self._json_data['resources']:
@@ -37,13 +40,15 @@ class Connector(object):
         return resources_list, page
 
     def get_resource_id(self, guid):
-        self._response = requests.get(urljoin(self._url_adr, 'resources') + '/' + guid, auth=('user', 'password'))
+        self._response = requests.get(urljoin(self._url_adr, 'resources') + '/' + guid,
+                                      auth=(self._credential['user'], self._credential['password']))
         self._json_data = json.loads(self._response.text)
         return Resources(resource_id=self._json_data['id'], name=self._json_data['name'],
                          description=self._json_data['description'], measurements=self._json_data['measurements'])
 
     def delete_resource(self, guid):
-        self._response = requests.delete(urljoin(self._url_adr, 'resources') + '/' + guid, auth=('user', 'password'))
+        self._response = requests.delete(urljoin(self._url_adr, 'resources') + '/' + guid,
+                                         auth=(self._credential['user'], self._credential['password']))
         return self._response.status_code
 
     def get_measurements(self, endpoints):
@@ -56,7 +61,7 @@ class Connector(object):
         return measurements_list
 
     def get_measurement(self, endpoint):
-        self._response = requests.get(endpoint, auth=('user', 'password'))
+        self._response = requests.get(endpoint, auth=(self._credential['user'], self._credential['password']))
         self._json_data = json.loads(self._response.text)
         return Measurements(host=self._json_data['host'], metric=self._json_data['metric'],
                             unit=self._json_data['unit'], max_value=self._json_data['maxValue'],
@@ -64,7 +69,8 @@ class Connector(object):
 
     def get_measurement_values(self, endpoint):
         values = []
-        self._response = requests.get(endpoint + '/values', params=self._payload, auth=('user', 'password'))
+        self._response = requests.get(endpoint + '/values', params=self._payload,
+                                      auth=(self._credential['user'], self._credential['password']))
         self._json_data = json.loads(self._response.text)
 
         for item in self._json_data['values']:
@@ -74,15 +80,18 @@ class Connector(object):
 
     def delete_measurement_values(self, guid):
         self._response = requests.delete(urljoin(self._url_adr, 'measurements') + '/' + guid + '/values',
-                                         headers={'content-type': 'application/json'}, auth=('user', 'password'))
+                                         headers={'content-type': 'application/json'},
+                                         auth=(self._credential['user'], self._credential['password']))
         return self._response.status_code
 
     def post_measurements(self):
         self._response = requests.post(urljoin(self._url_adr, 'measurements'), data=json.dumps(self._payload),
-                                       headers={'content-type': 'application/json'}, auth=('user', 'password'))
+                                       headers={'content-type': 'application/json'},
+                                       auth=(self._credential['user'], self._credential['password']))
         return self._response.status_code
 
     def delete_measurement(self, guid):
         self._response = requests.delete(urljoin(self._url_adr, 'measurements') + '/' + guid,
-                                         headers={'content-type': 'application/json'}, auth=('user', 'password'))
+                                         headers={'content-type': 'application/json'},
+                                         auth=(self._credential['user'], self._credential['password']))
         return self._response.status_code
