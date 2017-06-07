@@ -318,19 +318,20 @@ def static_graph(request):
             splitted_data = graph.split("/")
             details.append([splitted_data[0], splitted_data[1], splitted_data[2]])
 
-        connection = Connector(Monitors.objects.get(id=details[0][0]), request)
-        connection.payload = {"from": datetime.now() - timedelta(minutes=15),
-                              "to": datetime.now()}
+        connection = Connector(Monitors.objects.get(id=details[0][0]).monitor_domain)
+        connection.payload = {"from": datetime.now() - timedelta(minutes=19),
+                              "to": datetime.now() - timedelta(minutes=1)}
 
         for detail in details:
             measurements_endpoints = connection.get_resource_id(detail[1]).measurements
+            name = connection.get_resource_id(detail[1]).name
             for endpoint in measurements_endpoints:
                 if endpoint.__contains__(detail[2]):
                     measurements_endpoint = endpoint
             val = connection.get_measurement_values(measurements_endpoint)
             if val:
                 value_list.append(val)
-                data[0].append(detail[2])
+                data[0].append(str(connection.get_measurement(str(measurements_endpoint)).unit)+" "+name+" "+str(detail[2]))
 
         if value_list:
             for (i, list) in enumerate(value_list):
@@ -338,18 +339,12 @@ def static_graph(request):
                     if i == 0:
                         final_list.append([val.datetime, val.value])
                     else:
-                        if val.datetime == final_list[j][0]:
+                        if len(final_list[j])!=0:
                             final_list[j].append(val.value)
-                        else:
-                            final_list.append(val.datetime)
-                            for x in i:
-                                if x == i:
-                                    final_list[j].append(val.value)
-                                else:
-                                    final_list[j].append(None)
 
         for all in final_list:
-            data.append(all)
+            if len(all)==len(data[0]):
+                data.append(all)
 
         data_source = SimpleDataSource(data=data)
         chart = LineChart(data_source)
@@ -357,7 +352,7 @@ def static_graph(request):
         html = str(chart.as_html())
         html = html.replace('google.setOnLoadCallback', 'google.charts.setOnLoadCallback')
 
-    return render(request, 'static_graph.html', {'html': html, 'data': data})
+    return render(request, 'static_graph.html', {'html': html, 'data':data})
 
 
 def export_graph_csv(request):
