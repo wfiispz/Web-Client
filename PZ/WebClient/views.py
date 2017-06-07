@@ -318,7 +318,7 @@ def static_graph(request):
             splitted_data = graph.split("/")
             details.append([splitted_data[0], splitted_data[1], splitted_data[2]])
 
-        connection = Connector(Monitors.objects.get(id=details[0][0]).monitor_domain)
+        connection = Connector(Monitors.objects.get(id=details[0][0]), request)
         connection.payload = {"from": datetime.now() - timedelta(minutes=19),
                               "to": datetime.now() - timedelta(minutes=1)}
 
@@ -339,7 +339,7 @@ def static_graph(request):
                     if i == 0:
                         final_list.append([val.datetime, val.value])
                     else:
-                        if len(final_list[j])!=0:
+                        if len(final_list)>j:
                             final_list[j].append(val.value)
 
         for all in final_list:
